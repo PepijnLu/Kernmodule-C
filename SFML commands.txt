@@ -1,5 +1,0 @@
-SFML commands:
-
-g++ -c main.cpp -I"C:\Users\User1\Documents\libraries\SFML-2.6.1\include"
-
-g++ main.o -o main -L"C:\Users\User1\Documents\libraries\SFML-2.6.1\lib" -lsfml-graphics -lsfml-window -lsfml-system

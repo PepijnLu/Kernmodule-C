@@ -1,1 +1,0 @@
-g++ -c main.cpp -I"C:\Users\User1\Documents\libraries\SFML-2.6.1\include"
