@@ -12,23 +12,24 @@ class Rigidbody
     private:
     
     public:
-        Rigidbody()
-        {
-            //cout << "rb constructor" << endl;
-        };
-        ~Rigidbody()
-        {
-            //cout << "rb destructor" << endl;
-        };
+        Rigidbody(){}
+        ~Rigidbody(){}
         Rigidbody(float mass, float newElasticity, float newMaxSpeedX, float newMaxSpeedY);
         float mass;
         float maxSpeedX, maxSpeedY;
         float deltaTime;
-        float timeStep = 0.02;
+
+        // 1/60th of a second (60fps)
+        float timeStep = 0.016;
+        
         float elasticity;
         bool useGravity;
-        float gravConstant;
-        float earthMass;
+           
+        //Universal gravitational constant
+        float gravConstant = MathUtil::Multiply(6.67430, (MathUtil::Pow(10, -11)));
+        //Mass of the earth
+        float earthMass = MathUtil::Multiply(5.9722, (MathUtil::Pow(10, 24)));
+
         MathUtil::Vector2 gravity;
         MathUtil::Vector2 velocity;
         MathUtil::Vector2 ApplyForceOverTime(MathUtil::Vector2 force);

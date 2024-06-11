@@ -6,28 +6,20 @@
 #include <string>
 #include <memory>
 
-#include "Circle.h"
+#include "Enemy.h"
 #include "Player.h"
 #include "MathUtil.h"
 #include "GameObject.h"
 
 using namespace std;
 
-/*
-TO DO:
--clean up code
-
-Things to ask teacher:
--Do I need more math / memory management?
--Why broken on other pc's? 
-*/
 string gameName = "Asteroids";
-int totalEnemiesToSpawn = 50;
-int totalPointsNeeded = 35;
+int totalEnemiesToSpawn = 100;
+int totalPointsNeeded = 80;
 int maxFrameRate = 60;
 int screenWidth = 800;
 int screenHeight = 800;
-int maxEnemiesAtOnce = 7;
+int maxEnemiesAtOnce = 10;
 
 //In N/s
 float playerSpeed = 700.f;
@@ -35,28 +27,41 @@ float playerSpeed = 700.f;
 float playerMass = 75.f;
 //1 = conserve all energy, 0 = conserve no energy
 float playerElasticity = 0.2;
+//Enemy radius
 int playerSize = 50;
-int playerStartXpos = MathUtil::Subtract(MathUtil::Divide(screenWidth, 2), playerSize);
-int playerStartYpos = MathUtil::Subtract(screenHeight, MathUtil::Multiply(playerSize, 2));
+//In m/s
+int maxPlayerSpeedX = 10;
+//Doesn't move in Y
+int maxPlayerSpeedY = 0;
 
 //In N/s
 int minEnemySpeed = 200, maxEnemySpeed = 800;
+//In m/s, currently based on average human sprinting speed
+int maxEnemySpeedX = 8;
+int maxEnemySpeedY = 10;
 //In kgs
 int minEnemyMass = 20, maxEnemyMass = 150;
 //10 = conserve all energy, 0 = conserve no energy
 int minEnemyElasticity = 0, maxEnemyElasticity = 10;
+
+//Circle radius
 int enemySize = 25;
-int enemyStartXpos = MathUtil::Subtract(MathUtil::Divide(screenWidth, 2), enemySize);
+
 int enemyStartYpos = -500;
 int standardFontSize = 50;
+
+//Enemy spawn cooldown in frames
 int minFramesBetweenEnemies = 20;
 
+int playerStartXpos = MathUtil::Subtract(MathUtil::Divide(screenWidth, 2), playerSize);
+int playerStartYpos = MathUtil::Subtract(screenHeight, MathUtil::Multiply(playerSize, 2));
+int enemyStartXpos = MathUtil::Subtract(MathUtil::Divide(screenWidth, 2), enemySize);
 MathUtil::Vector2 inputValue;
 int frameCount;
 int enemyCount;
 int totalEnemiesSpawned;
 int totalEnemiesPassed;
-std::vector<std::unique_ptr<Circle>> enemyList;
+std::vector<std::unique_ptr<Enemy>> enemyList;
 sf::Time previousTime;
 
 int main()
@@ -80,7 +85,8 @@ int main()
     std::uniform_int_distribution<> disMass(minEnemyMass, maxEnemyMass); // Define the range
     std::uniform_int_distribution<> disElasticity(minEnemyElasticity, maxEnemyElasticity); // Define the range
 
-    Player *player = new Player(playerStartXpos, playerStartYpos, playerSize, playerSpeed, screenWidth, screenHeight, playerMass, playerElasticity);
+    //Create the player
+    Player *player = new Player(playerStartXpos, playerStartYpos, playerSize, playerSpeed, screenWidth, screenHeight, playerMass, playerElasticity, maxPlayerSpeedX, maxPlayerSpeedY);
 
     // Create a text object
     sf::Text text;
@@ -102,60 +108,70 @@ int main()
         window.clear();
 
         int arrowKeysPressed = 0;
+
         if (event.type == sf::Event::KeyPressed) 
         {
+            // Handle left arrow key press
             if ( (event.key.code == sf::Keyboard::Left)) 
             {
-                // Handle left arrow key press
                 inputValue.x = -1;
                 arrowKeysPressed++;
             }
+            // Handle right arrow key press
             if (event.key.code == sf::Keyboard::Right) 
             {
-                // Handle right arrow key press
                 inputValue.x = 1;
                 arrowKeysPressed++;
             }
         }
+        //Handle both arrows being pressed
         if (arrowKeysPressed == 2)
         {
             inputValue.x = 0;
         }
 
+        //Feed the inputvalue to the player
         player->inputValue = inputValue;
         player->Draw();
         window.draw(player->shape);
 
+        //Reset the inputvalue
         inputValue.x = 0;
+
+        //Check if a new enemy is needed
         if (totalEnemiesSpawned < totalEnemiesToSpawn)
         {
+            //Cooldown count down
             frameCount--;
+
             if (frameCount <= 0)
             {
-                // Generate a random number
-                float circleSpeedX = disSpeed(gen);
-                float circleMass = disMass(gen);
-                float circleElasticity = MathUtil::Divide(disElasticity(gen), 10);
+                // Generate some random numbers
+                float enemySpeedX = disSpeed(gen);
+                float enemyMass = disMass(gen);
+                float enemyElasticity = MathUtil::Divide(disElasticity(gen), 10);
 
-                //Circle* tempCircle = new Circle(enemyStartXpos, enemyStartYpos, enemySize, circleSpeedX, screenWidth, screenHeight, circleMass, circleElasticity);
-                enemyList.push_back(std::make_unique<Circle>(enemyStartXpos, enemyStartYpos, enemySize, circleSpeedX, screenWidth, screenHeight, circleMass, circleElasticity));
+                //Create an enemy
+                enemyList.push_back(std::make_unique<Enemy>(enemyStartXpos, enemyStartYpos, enemySize, enemySpeedX, screenWidth, screenHeight, enemyMass, enemyElasticity, maxEnemySpeedX, maxEnemySpeedY));
                 totalEnemiesSpawned++;
-                //enemyList.insert(std::next(enemyList.begin()), tempCircle);
                 enemyCount++;
+
+                //Reset the spawn cooldown
                 frameCount = minFramesBetweenEnemies;
             }
         }
 
-        //for (auto it = enemyList.begin(); it != enemyList.end();)
+        //Loop through all the existing enemies
         for (auto& obj : enemyList)
         {
             obj->Draw();
             window.draw(obj->shape);
-
+            //Check collision between enemy and player
             if (MathUtil::Add(obj->centerPointY, obj->circleRadius) >= MathUtil::Subtract(screenHeight, (MathUtil::Multiply(playerSize, 2))))
             {
                 int distanceEnemyToPlayer = MathUtil::CalcDistance(obj->centerPointX, player->centerPointX, obj->centerPointY, player->centerPointY);
 
+                //Hit
                 if ((MathUtil::Subtract(distanceEnemyToPlayer, obj->circleRadius) <= player->circleRadius) && (!obj->hitThePlayer))
                 {
                     obj->awardPoint = false;
@@ -164,6 +180,7 @@ int main()
                 }
             }
 
+            //Logic for if an object reached the bottom
             if (obj->needsRemoving)
             {
                 if (obj->awardPoint)
@@ -172,43 +189,40 @@ int main()
                     text.setString("Points: " + std::to_string(player->points) + "/" + std::to_string(totalPointsNeeded));
                     window.draw(text);
                 }
-                //enemyList.erase(obj);
                 enemyCount--;
                 totalEnemiesPassed++;
             }
-            //delete obj;
         }
 
+        //Erase and destroy all enemies that need to be removed (reached the bottom)
         enemyList.erase(std::remove_if(enemyList.begin(), enemyList.end(),
-                                   [](const std::unique_ptr<Circle>& obj) { return obj->needsRemoving; }),
+                                   [](const std::unique_ptr<Enemy>& obj) { return obj->needsRemoving; }),
                     enemyList.end());
 
+        //Trigger the end screen
         if ((totalEnemiesPassed >= totalEnemiesToSpawn))
         {
             sf::RectangleShape square(sf::Vector2f(screenWidth, screenHeight));
             text.setCharacterSize(MathUtil::Multiply(standardFontSize, 2));
+            //Win case
             if (player->points >= totalPointsNeeded)
             {
-                text.setString("GG");
+                text.setString("You win");
                 square.setFillColor(sf::Color::Green);
             }
+            //Lose case
             else
             {
-                text.setString("Womp Womp");
+                text.setString("You lose");
                 square.setFillColor(sf::Color::Red);
             }
-            //delete player;
             window.draw(square);
         }
         window.draw(text);
         window.display();
     }
 
-    player->rbList.clear();
-    for (auto& obj : enemyList)
-    {
-        obj->rbList.clear();
-    }
+    //Clean up memory when closing
     delete player;
     enemyList.clear();
 

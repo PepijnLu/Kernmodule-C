@@ -9,15 +9,19 @@ using namespace std;
 
 void Player::Draw()
 {
-    if (rbList.front()->useGravity)
+    if (rb->useGravity)
     {
-        rbList.front()->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
+        rb->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
     }
-    
+
+    //Move with the player inputs    
     NormalMovement(inputValue);
 
+    //Handle bouncing against walls
     BounceAgainstWalls();
-    ApplyVector(rbList.front()->velocity);
+
+    //Apply the rigidbody's vector
+    ApplyVector(rb->velocity);
 }
 
 

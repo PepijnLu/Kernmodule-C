@@ -8,6 +8,9 @@ using namespace std;
 
 namespace MathUtil
 {
+    //Amount of 0's = amount of decimals the square root is accurate to
+    float squareRootAccuracy = 100000;
+
     float Add(float num1, float num2)
     {
         return (num1 + num2);
@@ -28,25 +31,30 @@ namespace MathUtil
     {
         float numSquared = num;
 
+        //Handle negative exponents
         if (exponent < 0)
         {
             exponent = Abs(exponent);
             float denominator = 0;
             for(int i = 1; i < exponent; i++)
             {
-                denominator = numSquared *= num;
+                numSquared = MathUtil::Multiply(numSquared, num);
+                denominator = numSquared;
             }
-            numSquared = 1/denominator;
+            numSquared = Divide(1, denominator);
         }
+
+        //Anything to the power of 0 is 1
         else if (exponent == 0)
         {
             return 1;
         }
+        //Handle positive exponents
         else if (exponent > 0)
         {
             for(int i = 1; i < exponent; i++)
             {
-                numSquared *= num;
+                numSquared = MathUtil::Multiply(numSquared, num);
             }
         }
         return numSquared;
@@ -74,15 +82,18 @@ namespace MathUtil
         {
             return number;
         }
+        //Babylonian method for finding square roots
         else
         {
+            //Any positive number works
             int intialNumber = 10;
+            
             float prevNumber = intialNumber;
             while (!found)
             {
-                float newNumber = ((prevNumber + (number / prevNumber))/2);
+                float newNumber = Divide(Add(prevNumber, (Divide(number, prevNumber))), 2);
 
-                if (int(newNumber * 100000) == (int(prevNumber * 100000)))
+                if (int(MathUtil::Multiply(newNumber, squareRootAccuracy)) == int(MathUtil::Multiply(prevNumber, squareRootAccuracy)))
                 {
                     found = true;
                     return newNumber;
@@ -113,6 +124,7 @@ namespace MathUtil
         return newVec;
     }
 
+    //Pyhtagoream theorem
     int CalcDistance(int x1, int x2, int y1, int y2)
     {
         int distanceX = Subtract(x1, x2);
@@ -125,14 +137,6 @@ namespace MathUtil
         int distance = GetSquareRoot(distancesSquared);
 
         return distance;
-    }
-
-    float CalcDeltaTime(float fps)
-    {
-        float a = Divide(1, fps);
-        float deltaTime = Multiply(a, 60);;
-
-        return deltaTime;
     }
 }
 

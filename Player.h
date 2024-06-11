@@ -13,15 +13,16 @@ class Player : public GameObject
 
         Player(){};
         virtual ~Player(){};
-        Player(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity)
-        : GameObject(xPos, yPos, circleRadius, xSpeed, screenWidth, screenHeight, mass, elasticity)
+        Player(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity, float maxSpeedX, float maxSpeedY)
+        : GameObject(xPos, yPos, circleRadius, xSpeed, screenWidth, screenHeight, mass, elasticity, maxSpeedX, maxSpeedY)
         {
-            //PLAYER SPECIFIC
             this->points = 0;
+
+            //Tell the game that this is the player
             this->player = true;
+
             this->shape.setFillColor(sf::Color::Blue);
-            this->rbList.front()->useGravity = false;
-            //PLAYER SPEFICIC END
+            this->rb->useGravity = false;
         }
 
         virtual void Draw();

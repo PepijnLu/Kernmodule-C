@@ -22,12 +22,12 @@ Rigidbody::Rigidbody(float newMass, float newElasticity, float newMaxSpeedX, flo
     this->velocity.y = 0;
     this->elasticity = newElasticity;
     this->gravity.x = 0;
+
+    //Earth gravity
     this->gravity.y = 9.81;
+
     this->maxSpeedX = newMaxSpeedX;
     this->maxSpeedY = newMaxSpeedY;
-    this->timeStep = 0.016;
-    this->gravConstant = MathUtil::Multiply(6.67430, (MathUtil::Pow(10, -11)));
-    this->earthMass = MathUtil::Multiply(5.9722, (MathUtil::Pow(10, 24)));
 }
 
 MathUtil::Vector2 Rigidbody::ApplyForceOverTime(MathUtil::Vector2 force)
@@ -38,7 +38,7 @@ MathUtil::Vector2 Rigidbody::ApplyForceOverTime(MathUtil::Vector2 force)
     acceleration.x = MathUtil::Divide(force.x, mass);
     acceleration.y = MathUtil::Divide(force.y, mass);
 
-
+    //Make sure it doesn't go over max speed
     if (this->velocity.x < MathUtil::Abs(this->maxSpeedX))
     {
         this->velocity.x += acceleration.x * this->timeStep;
@@ -64,10 +64,11 @@ MathUtil::Vector2 Rigidbody::ApplyGravity(float distance)
     MathUtil::Vector2 gravForce;
 
     gravForce.x = 0;
+
+    //Math for calculating gravitational force
     float distanceSquared = MathUtil::Pow(distance, 2);
     float massesMultiplied = MathUtil::Multiply(mass, earthMass);
     float massesOverDistanceSquared = MathUtil::Divide(massesMultiplied, distanceSquared);
-
     gravForce.y = MathUtil::Multiply(gravConstant, massesOverDistanceSquared);
 
     ApplyForceOverTime(gravForce);
@@ -76,9 +77,10 @@ MathUtil::Vector2 Rigidbody::ApplyGravity(float distance)
     return gravForce;
 }
 
+//For bouncing against walls
 MathUtil::Vector2 Rigidbody::AddImpulseForce()
 {
-    this->velocity.x = -this->elasticity * this->velocity.x;
+    this->velocity.x = MathUtil::Multiply(-this->elasticity, this->velocity.x);
 
     return velocity;
 }

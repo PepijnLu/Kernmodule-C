@@ -8,7 +8,7 @@
 
 using namespace std;
 
-GameObject::GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity)
+GameObject::GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity, float maxSpeedX, float maxSpeedY)
 {
     this->position.x = xPos;
     this->position.y = yPos;
@@ -30,27 +30,23 @@ GameObject::GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int s
     this->needsRemoving = false;
     this->hitThePlayer = false;
     this->awardPoint = true;
-    rbList.push_back(std::make_unique<Rigidbody>(mass, elasticity, 8, 10));
-    //Rigidbody rb = Rigidbody(mass, elasticity, 8, 10);
-    //rbList.insert(std::next(rbList.begin()), rb);
+    this->rb = std::make_unique<Rigidbody>(mass, elasticity, maxSpeedX, maxSpeedY);
 }
 
 void GameObject::Draw()
 {   
-    rbList.front()->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
+    rb->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
     NormalMovement(stdVec);
     
     BounceAgainstWalls();
-    //cout << "Velocity: " << rbList.front()->velocity.x << " " << rbList.front()->velocity.y << endl;
-    ApplyVector(rbList.front()->velocity);
-    //delete *it;
+    ApplyVector(rb->velocity);
 }
 
 void GameObject::BounceAgainstWalls()
 { 
     if ((position.x <= 0) && !inCollision) 
     {    
-        rbList.front()->AddImpulseForce();
+        rb->AddImpulseForce();
         inCollision = true;
         if (!player)
         {
@@ -59,7 +55,7 @@ void GameObject::BounceAgainstWalls()
     }
     else if (((position.x + circleDiameter) >= screenWidth) && !inCollision) 
     {   
-        rbList.front()->AddImpulseForce();
+        rb->AddImpulseForce();
         inCollision = true;
         if (!player)
         {
@@ -89,7 +85,7 @@ void GameObject::NormalMovement(MathUtil::Vector2 vec)
     {
         vec.x = MathUtil::Multiply(vec.x, xSpeed);
     }
-    rbList.front()->ApplyForceOverTime(vec);
+    rb->ApplyForceOverTime(vec);
 }
 
 
@@ -123,6 +119,7 @@ void GameObject::ApplyVector(MathUtil::Vector2 vec)
     position.x = MathUtil::Add(position.x, vec.x);
     position.y = MathUtil::Add(position.y, vec.y);
 
+    //Set the position of the circle and change the centerpoint
     this->shape.setPosition(position.x, position.y);
     this->centerPointX = MathUtil::Add(position.x, circleRadius);
     this->centerPointY = MathUtil::Add(position.y, circleRadius);
