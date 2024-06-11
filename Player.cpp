@@ -9,18 +9,15 @@ using namespace std;
 
 void Player::Draw()
 {
-    auto it = rbList.begin();
-    auto& obj = *it;
-
-    if (obj.useGravity)
+    if (rbList.front()->useGravity)
     {
-        obj.ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
+        rbList.front()->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
     }
     
     NormalMovement(inputValue);
 
     BounceAgainstWalls();
-    ApplyVector(obj.velocity);
+    ApplyVector(rbList.front()->velocity);
 }
 
 

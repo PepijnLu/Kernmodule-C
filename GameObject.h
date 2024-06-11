@@ -26,6 +26,10 @@ class GameObject
         {
             cout << "Base constructor!" << endl;
         }
+        ~GameObject()
+        {
+            cout << "Base constructor!" << endl;
+        }
         GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity);
 
         int circleRadius;
@@ -44,7 +48,8 @@ class GameObject
         MathUtil::Vector2 inputValue;
         bool hitThePlayer;
 
-        std::list<Rigidbody> rbList;
+        //std::list<Rigidbody> rbList;
+        std::vector<std::unique_ptr<Rigidbody>> rbList;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "MathUtil.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -13,7 +14,11 @@ class Rigidbody
     public:
         Rigidbody()
         {
-            cout << "" << endl;
+            //cout << "rb constructor" << endl;
+        };
+        ~Rigidbody()
+        {
+            //cout << "rb destructor" << endl;
         };
         Rigidbody(float mass, float newElasticity, float newMaxSpeedX, float newMaxSpeedY);
         float mass;

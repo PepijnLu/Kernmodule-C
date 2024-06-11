@@ -4,6 +4,7 @@
 #include <list>
 #include <random>
 #include <string>
+#include <memory>
 
 #include "Circle.h"
 #include "Player.h"
@@ -55,7 +56,7 @@ int frameCount;
 int enemyCount;
 int totalEnemiesSpawned;
 int totalEnemiesPassed;
-std::list<Circle*> enemyList;
+std::vector<std::unique_ptr<Circle>> enemyList;
 sf::Time previousTime;
 
 int main()
@@ -100,7 +101,7 @@ int main()
 
         window.clear();
 
-        int arrowKeysPressed;
+        int arrowKeysPressed = 0;
         if (event.type == sf::Event::KeyPressed) 
         {
             if ( (event.key.code == sf::Keyboard::Left)) 
@@ -136,17 +137,18 @@ int main()
                 float circleMass = disMass(gen);
                 float circleElasticity = MathUtil::Divide(disElasticity(gen), 10);
 
-                Circle* tempCircle = new Circle(enemyStartXpos, enemyStartYpos, enemySize, circleSpeedX, screenWidth, screenHeight, circleMass, circleElasticity);
+                //Circle* tempCircle = new Circle(enemyStartXpos, enemyStartYpos, enemySize, circleSpeedX, screenWidth, screenHeight, circleMass, circleElasticity);
+                enemyList.push_back(std::make_unique<Circle>(enemyStartXpos, enemyStartYpos, enemySize, circleSpeedX, screenWidth, screenHeight, circleMass, circleElasticity));
                 totalEnemiesSpawned++;
-                enemyList.insert(std::next(enemyList.begin()), tempCircle);
+                //enemyList.insert(std::next(enemyList.begin()), tempCircle);
                 enemyCount++;
                 frameCount = minFramesBetweenEnemies;
             }
         }
 
-        for (auto it = enemyList.begin(); it != enemyList.end();)
+        //for (auto it = enemyList.begin(); it != enemyList.end();)
+        for (auto& obj : enemyList)
         {
-            auto& obj = *it;
             obj->Draw();
             window.draw(obj->shape);
 
@@ -170,17 +172,16 @@ int main()
                     text.setString("Points: " + std::to_string(player->points) + "/" + std::to_string(totalPointsNeeded));
                     window.draw(text);
                 }
-                it = enemyList.erase(it);
+                //enemyList.erase(obj);
                 enemyCount--;
                 totalEnemiesPassed++;
-                delete obj;
             }
-
-            else
-            {
-                ++it; // Move to the next element
-            }
+            //delete obj;
         }
+
+        enemyList.erase(std::remove_if(enemyList.begin(), enemyList.end(),
+                                   [](const std::unique_ptr<Circle>& obj) { return obj->needsRemoving; }),
+                    enemyList.end());
 
         if ((totalEnemiesPassed >= totalEnemiesToSpawn))
         {
@@ -196,12 +197,20 @@ int main()
                 text.setString("Womp Womp");
                 square.setFillColor(sf::Color::Red);
             }
-            delete player;
+            //delete player;
             window.draw(square);
         }
         window.draw(text);
         window.display();
     }
+
+    player->rbList.clear();
+    for (auto& obj : enemyList)
+    {
+        obj->rbList.clear();
+    }
+    delete player;
+    enemyList.clear();
 
     return 0;
 }

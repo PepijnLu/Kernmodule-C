@@ -12,6 +12,7 @@ class Player : public GameObject
         MathUtil::Vector2 position;
 
         Player(){};
+        virtual ~Player(){};
         Player(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity)
         : GameObject(xPos, yPos, circleRadius, xSpeed, screenWidth, screenHeight, mass, elasticity)
         {
@@ -19,7 +20,7 @@ class Player : public GameObject
             this->points = 0;
             this->player = true;
             this->shape.setFillColor(sf::Color::Blue);
-            this->rbList.front().useGravity = false;
+            this->rbList.front()->useGravity = false;
             //PLAYER SPEFICIC END
         }
 

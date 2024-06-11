@@ -11,7 +11,8 @@ class Circle : public GameObject
     public:
         MathUtil::Vector2 position;
 
-        Circle();
+        Circle(){};
+        ~Circle(){};
         Circle(int xPos, int yPos, int circleRadius, float xSpeed, int screenWidth, int screenHeight, float mass, float elasticity)
         : GameObject(xPos, yPos, circleRadius, xSpeed, screenWidth, screenHeight, mass, elasticity)
         {
@@ -27,8 +28,8 @@ class Circle : public GameObject
                 this->xSpeed *= -1;
             }
 
-            this->rbList.front().elasticity = elasticity;
-            this->rbList.front().useGravity = true;
+            this->rbList.front()->elasticity = elasticity;
+            this->rbList.front()->useGravity = true;
             this->needsRemoving = false;     
             this->player = false;
             this->shape.setFillColor(sf::Color::Red);

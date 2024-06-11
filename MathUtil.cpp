@@ -78,7 +78,6 @@ namespace MathUtil
         {
             int intialNumber = 10;
             float prevNumber = intialNumber;
-            float currentNumber = 0;
             while (!found)
             {
                 float newNumber = ((prevNumber + (number / prevNumber))/2);

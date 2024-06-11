@@ -18,6 +18,7 @@ GameObject::GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int s
     this->maxSpeed = 5;
     this->stdVec.x = 1;
     this->stdVec.y = 0;
+    this->inCollision = false;
 
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
@@ -29,35 +30,27 @@ GameObject::GameObject(int xPos, int yPos, int circleRadius, float xSpeed, int s
     this->needsRemoving = false;
     this->hitThePlayer = false;
     this->awardPoint = true;
-    Rigidbody rb = Rigidbody(mass, elasticity, 8, 10);
-    rbList.insert(std::next(rbList.begin()), rb);
+    rbList.push_back(std::make_unique<Rigidbody>(mass, elasticity, 8, 10));
+    //Rigidbody rb = Rigidbody(mass, elasticity, 8, 10);
+    //rbList.insert(std::next(rbList.begin()), rb);
 }
 
 void GameObject::Draw()
-{
-    auto it = rbList.begin();
-    auto& obj = *it;
-
-    if (obj.useGravity)
-    {
-        obj.ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
-    }
-
+{   
+    rbList.front()->ApplyGravity(MathUtil::Subtract(screenHeight, position.y));
     NormalMovement(stdVec);
     
     BounceAgainstWalls();
-
-    ApplyVector(obj.velocity);
+    //cout << "Velocity: " << rbList.front()->velocity.x << " " << rbList.front()->velocity.y << endl;
+    ApplyVector(rbList.front()->velocity);
+    //delete *it;
 }
 
 void GameObject::BounceAgainstWalls()
 { 
-    auto it = rbList.begin();
-    auto& obj = *it; 
-
     if ((position.x <= 0) && !inCollision) 
     {    
-        obj.AddImpulseForce();
+        rbList.front()->AddImpulseForce();
         inCollision = true;
         if (!player)
         {
@@ -66,7 +59,7 @@ void GameObject::BounceAgainstWalls()
     }
     else if (((position.x + circleDiameter) >= screenWidth) && !inCollision) 
     {   
-        obj.AddImpulseForce();
+        rbList.front()->AddImpulseForce();
         inCollision = true;
         if (!player)
         {
@@ -83,7 +76,7 @@ void GameObject::BounceAgainstWalls()
         {
             this->needsRemoving = true;
         }
-    }
+    }   
 }
 
 void GameObject::NormalMovement(MathUtil::Vector2 vec)
@@ -96,9 +89,7 @@ void GameObject::NormalMovement(MathUtil::Vector2 vec)
     {
         vec.x = MathUtil::Multiply(vec.x, xSpeed);
     }
-    auto it = rbList.begin();
-    auto& obj = *it;
-    obj.ApplyForceOverTime(vec);
+    rbList.front()->ApplyForceOverTime(vec);
 }
 
 
